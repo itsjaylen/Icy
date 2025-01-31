@@ -1,0 +1,50 @@
+{
+  "postgres": {
+    "host": "localhost",
+    "port": "5432",
+    "user": "postgres",
+    "password": "password",
+    "database": "exampledb",
+    "timeout": 30,
+    "max_retries": 5
+  },
+  "clickhouse": {
+    "host": "localhost",
+    "port": "9000",
+    "user": "default",
+    "password": "password",
+    "database": "exampledb",
+    "timeout": 30,
+    "max_retries": 5
+  },
+  "twitch": {
+    "client_id": "",
+    "client_secret": "",
+    "oauth_uri": "",
+    "twitch_chat": {
+      "enabled": false,
+      "loopback": false
+    }
+  },
+  "rabbitmq": {
+    "host": "localhost",
+    "port": "5672",
+    "user": "guest",
+    "password": "guest",
+    "enabled": false
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6379",
+    "password": ""
+  },
+  "webhook": {
+    "url": "",
+    "enabled": false
+  },
+  "server": {
+    "host": "localhost",
+    "port": "8111",
+    "secret_key": "your-secret-key"
+  }
+}
