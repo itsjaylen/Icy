@@ -1,29 +1,19 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
-
-	logger "itsjaylen/IcyLogger"
-	"github.com/gin-gonic/gin"
 )
 
-func ErrorHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-
-		if len(c.Errors) > 0 {
-			for _, err := range c.Errors {
-				if addErr := c.Error(err.Err); addErr != nil {
-					logger.Error.Printf("Failed to add error to context: %v", addErr)
-				}
+// ErrorHandler is a middleware for handling errors
+func ErrorHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				log.Printf("Error encountered: %v", rec)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
-
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status":  "error",
-				"message": c.Errors[0].Error(),
-			})
-
-			return
-		}
-	}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }

@@ -2,11 +2,10 @@ package routes
 
 import (
 	"IcyAPI/internal/api/routes/admin"
-
-	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // Register all routes here
-func InitRegisterRoutes(router *gin.Engine) {
-	admin.RegisterRoutes(router)
+func InitRegisterRoutes(mux *http.ServeMux) {
+	admin.RegisterRoutes(mux)
 }

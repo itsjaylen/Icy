@@ -3,38 +3,56 @@ package server
 import (
 	"IcyAPI/internal/api/middleware"
 	"IcyAPI/internal/api/routes"
+	"context"
 	"fmt"
-
-	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
+	"time"
 )
 
-// Server struct to hold server-related configurations
+// Server struct to hold server configurations
 type Server struct {
-	Host   string
-	Port   string
-	Router *gin.Engine
+	Host    string
+	Port    string
+	Handler http.Handler
+	server  *http.Server
 }
 
-// NewServer creates a new server instance with the given host and port
+// NewServer creates a new server instance
 func NewServer(host, port string) *Server {
-	router := gin.Default()
+	mux := http.NewServeMux()
 
-	// Apply rate limiter middleware globally
-	router.Use(middleware.RecoveryMiddleware())
-	router.Use(middleware.ErrorHandler())
+	// Register routes
+	routes.InitRegisterRoutes(mux)
 
-	// Register admin routes from the router package
-	routes.InitRegisterRoutes(router)
+	// Apply middlewares
+	handler := middleware.LoggingMiddleware(mux)
+	handler = middleware.AnalyticsMiddleware(handler)
+	handler = middleware.RecoveryMiddleware(handler)
+	handler = middleware.ErrorHandler(handler)
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Handler: handler,
+	}
 
 	return &Server{
-		Host:   host,
-		Port:   port,
-		Router: router,
+		Host:    host,
+		Port:    port,
+		Handler: handler,
+		server:  srv,
 	}
 }
 
-// Start runs the server on the given port
+// Start runs the server
 func (s *Server) Start() error {
-	address := fmt.Sprintf("%s:%s", s.Host, s.Port)
-	return s.Router.Run(address)
+	log.Printf("Starting server on %s:%s\n", s.Host, s.Port)
+	return s.server.ListenAndServe()
+}
+
+// Shutdown gracefully stops the server
+func (s *Server) Shutdown() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return s.server.Shutdown(ctx)
 }

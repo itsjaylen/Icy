@@ -1,30 +1,20 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"runtime/debug"
-
-	logger "itsjaylen/IcyLogger"
-
-	"github.com/gin-gonic/gin"
 )
 
-// RecoveryMiddleware handles panics 
-func RecoveryMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
+// RecoveryMiddleware handles panics
+func RecoveryMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				logger.Error.Printf("Panic recovered: %v\n%s", err, debug.Stack())
-
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":   "Internal Server Error",
-					"message": "Something went wrong. Please try again later.",
-				})
-
-				c.Abort()
+				log.Printf("Panic recovered: %v\n%s", err, debug.Stack())
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()
-
-		c.Next()
-	}
+		next.ServeHTTP(w, r)
+	})
 }

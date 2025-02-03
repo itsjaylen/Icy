@@ -4,17 +4,21 @@ import (
 	"IcyAPI/internal/api/server"
 	config "itsjaylen/IcyConfig"
 	logger "itsjaylen/IcyLogger"
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/pflag"
 )
 
-// App structure to hold dependencies such as config and server
-type App struct {
+// App structure to hold dependencies
+ type App struct {
 	cfg    *config.AppConfig
-	server *server.Server 
+	server *server.Server
 }
 
-// Function to load the config and return the app structure
+// NewApp initializes the application
 func NewApp(debug bool) (*App, error) {
 	var err error
 	var cfg *config.AppConfig
@@ -31,7 +35,6 @@ func NewApp(debug bool) (*App, error) {
 		logger.Error.Fatalf("Error loading config: %v", err)
 	}
 
-	// Initialize the server 
 	server := server.NewServer(cfg.Server.Host, cfg.Server.Port)
 
 	return &App{
@@ -45,16 +48,31 @@ func main() {
 	pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	pflag.Parse()
 
-	// Create the app and inject the config
 	app, err := NewApp(*debug)
 	if err != nil {
 		logger.Error.Fatalf("Error initializing app: %v", err)
 	}
 
-	// You can now access app.cfg anywhere in the app
 	logger.Info.Printf("Loaded config: %v", app.cfg)
 
-	if err := app.server.Start(); err != nil {
-		logger.Error.Fatalf("Error starting server: %v", err)
+	// Create a context for graceful shutdown
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	// Run the server in a goroutine
+	go func() {
+		if err := app.server.Start(); err != nil {
+			logger.Error.Printf("Error starting server: %v", err)
+			stop()
+		}
+	}()
+
+	<-ctx.Done()
+	logger.Info.Println("Shutting down server...")
+
+	if err := app.server.Shutdown(); err != nil {
+		logger.Error.Printf("Error during server shutdown: %v", err)
 	}
+
+	logger.Info.Println("Server gracefully stopped.")
 }
