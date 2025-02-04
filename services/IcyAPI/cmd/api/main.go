@@ -62,7 +62,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// Start the API server in a goroutine
 	go func() {
 		if err := app.apiServer.Start(); err != nil {
 			logger.Error.Printf("Error starting API server: %v", err)
@@ -70,7 +69,6 @@ func main() {
 		}
 	}()
 
-	// Start the Event server in a goroutine
 	go func() {
 		if err := app.eventServer.Start(); err != nil {
 			logger.Error.Printf("Error starting Event server: %v", err)
@@ -78,7 +76,6 @@ func main() {
 		}
 	}()
 
-	// Wait for shutdown signal
 	<-ctx.Done()
 	logger.Info.Println("Shutting down servers...")
 

@@ -11,7 +11,7 @@ import (
 type Client struct {
 	id        int
 	send      chan string
-	subscribe map[string]bool 
+	subscribe map[string]bool
 }
 
 // Handles new client connections
