@@ -44,7 +44,11 @@
   },
   "server": {
     "host": "localhost",
-    "port": "8111",
-    "secret_key": "your-secret-key"
+    "port": "9050",
+    "secret_key": "goodkey123456"
+  },
+  "event_server": {
+    "Host": "localhost",
+    "Port": "9051"
   }
 }

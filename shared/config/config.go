@@ -9,6 +9,7 @@ type AppConfig struct {
 	Redis      RedisConfig    `json:"redis"`
 	Webhook    WebhookConfig  `json:"webhook"`
 	Server     ServerConfig   `json:"server"`
+	EventServer EventServer    `json:"event_server"`
 }
 
 // SQLConfig represents configuration for connecting to a SQL database.
@@ -63,4 +64,10 @@ type ServerConfig struct {
 	Host      string `json:"host"`
 	Port      string `json:"port"`
 	SecretKey string `json:"secret_key,omitempty"`
+}
+
+// EventServer holds the configuration for the event server.
+type EventServer struct {
+	Host string
+	Port string
 }

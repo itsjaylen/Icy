@@ -2,6 +2,7 @@ package main
 
 import (
 	"IcyAPI/internal/api/server"
+	"IcyAPI/internal/events"
 	config "itsjaylen/IcyConfig"
 	logger "itsjaylen/IcyLogger"
 	"context"
@@ -12,13 +13,14 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// App structure to hold dependencies
- type App struct {
-	cfg    *config.AppConfig
-	server *server.Server
+// App structure to hold dependencies for both servers
+type App struct {
+	cfg         *config.AppConfig
+	apiServer   *server.Server
+	eventServer *events.EventServer
 }
 
-// NewApp initializes the application
+// NewApp initializes the application, both API and Event servers
 func NewApp(debug bool) (*App, error) {
 	var err error
 	var cfg *config.AppConfig
@@ -35,11 +37,14 @@ func NewApp(debug bool) (*App, error) {
 		logger.Error.Fatalf("Error loading config: %v", err)
 	}
 
-	server := server.NewServer(cfg.Server.Host, cfg.Server.Port)
+	// Initialize both the API server and the Event server
+	apiServer := server.NewAPIServer(cfg.Server.Host, cfg.Server.Port)
+	eventServer := events.NewEventServer(cfg.Server.Host, cfg.EventServer.Port)
 
 	return &App{
-		cfg:    cfg,
-		server: server,
+		cfg:         cfg,
+		apiServer:   apiServer,
+		eventServer: eventServer,
 	}, nil
 }
 
@@ -53,26 +58,33 @@ func main() {
 		logger.Error.Fatalf("Error initializing app: %v", err)
 	}
 
-	logger.Info.Printf("Loaded config: %v", app.cfg)
-
-	// Create a context for graceful shutdown
+	// Set up graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// Run the server in a goroutine
+	// Start the API server in a goroutine
 	go func() {
-		if err := app.server.Start(); err != nil {
-			logger.Error.Printf("Error starting server: %v", err)
+		if err := app.apiServer.Start(); err != nil {
+			logger.Error.Printf("Error starting API server: %v", err)
 			stop()
 		}
 	}()
 
+	// Start the Event server in a goroutine
+	go func() {
+		if err := app.eventServer.Start(); err != nil {
+			logger.Error.Printf("Error starting Event server: %v", err)
+			stop()
+		}
+	}()
+
+	// Wait for shutdown signal
 	<-ctx.Done()
-	logger.Info.Println("Shutting down server...")
+	logger.Info.Println("Shutting down servers...")
 
-	if err := app.server.Shutdown(); err != nil {
-		logger.Error.Printf("Error during server shutdown: %v", err)
-	}
+	// Gracefully shutdown the API and Event servers
+	app.apiServer.Shutdown()
+	app.eventServer.Shutdown()
 
-	logger.Info.Println("Server gracefully stopped.")
+	logger.Info.Println("Servers gracefully stopped.")
 }

@@ -17,7 +17,7 @@ import (
 var k = koanf.New(".")
 
 // LoadConfig is the main function to load the application configuration.
-func LoadConfig(configType string) (*AppConfig, error) {  // Notice the pointer return type here
+func LoadConfig(configType string) (*AppConfig, error) {
 	switch configType {
 	case "debug":
 		fmt.Println("Loading debug configuration")
@@ -31,7 +31,7 @@ func LoadConfig(configType string) (*AppConfig, error) {  // Notice the pointer 
 }
 
 // loadDebugConfig handles loading or creating the debug configuration file.
-func loadDebugConfig() (*AppConfig, error) {  // Pointer return type
+func loadDebugConfig() (*AppConfig, error) {
 	configDir := "config"
 	configFile := filepath.Join(configDir, "debug.json")
 
@@ -76,7 +76,7 @@ func ensureConfigFileExists(configFile string) error {
 }
 
 // readConfigFromFile reads and decodes the configuration from a file.
-func readConfigFromFile(configFile string) (*AppConfig, error) {  // Pointer return type
+func readConfigFromFile(configFile string) (*AppConfig, error) {
 	file, err := os.Open(configFile)
 	if err != nil {
 		return nil, fmt.Errorf("error opening config file: %w", err)
@@ -88,11 +88,11 @@ func readConfigFromFile(configFile string) (*AppConfig, error) {  // Pointer ret
 	if err := decoder.Decode(&config); err != nil {
 		return nil, fmt.Errorf("error decoding config file: %w", err)
 	}
-	return &config, nil  // Return pointer here
+	return &config, nil
 }
 
 // loadReleaseConfig handles loading configuration from environment variables and flags.
-func loadReleaseConfig() (*AppConfig, error) {  // Pointer return type
+func loadReleaseConfig() (*AppConfig, error) {
 	// Define flags
 	fs := pflag.NewFlagSet("config", pflag.ContinueOnError)
 	models.PostgresFlags(fs)
@@ -114,7 +114,6 @@ func loadReleaseConfig() (*AppConfig, error) {  // Pointer return type
 	}
 
 	// Load environment variables into Koanf
-	// Environment variables must have the prefix `APP_` and use `_` as the delimiter.
 	if err := k.Load(env.Provider("APP_", ".", func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(s, "APP_")), "_", ".")
 	}), nil); err != nil {
@@ -127,5 +126,5 @@ func loadReleaseConfig() (*AppConfig, error) {  // Pointer return type
 		return nil, fmt.Errorf("error unmarshaling configuration: %w", err)
 	}
 
-	return &config, nil  // Return pointer here
+	return &config, nil
 }

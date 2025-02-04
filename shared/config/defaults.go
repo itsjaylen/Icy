@@ -49,4 +49,8 @@ var DefaultConfig = AppConfig{
 		Port:      "8080",
 		SecretKey: "your-secret-key",
 	},
+	EventServer: EventServer{
+		Host: "localhost",
+		Port: "8081",
+	},
 }

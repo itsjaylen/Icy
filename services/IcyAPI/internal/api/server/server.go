@@ -5,7 +5,7 @@ import (
 	"IcyAPI/internal/api/routes"
 	"context"
 	"fmt"
-	"log"
+	logger "itsjaylen/IcyLogger"
 	"net/http"
 	"time"
 )
@@ -19,7 +19,7 @@ type Server struct {
 }
 
 // NewServer creates a new server instance
-func NewServer(host, port string) *Server {
+func NewAPIServer(host, port string) *Server {
 	mux := http.NewServeMux()
 
 	// Register routes
@@ -46,7 +46,7 @@ func NewServer(host, port string) *Server {
 
 // Start runs the server
 func (s *Server) Start() error {
-	log.Printf("Starting server on %s:%s\n", s.Host, s.Port)
+	logger.Info.Printf("Starting server on %s:%s", s.Host, s.Port)
 	return s.server.ListenAndServe()
 }
 
