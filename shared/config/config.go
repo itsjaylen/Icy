@@ -2,15 +2,15 @@ package config
 
 // AppConfig holds the application-wide configuration settings.
 type AppConfig struct {
-	Postgres   SQLConfig      `json:"postgres"`
-	Clickhouse SQLConfig      `json:"clickhouse"`
-	Twitch     TwitchConfig   `json:"twitch"`
-	RabbitMQ   RabbitMQConfig `json:"rabbitmq"`
-	Redis      RedisConfig    `json:"redis"`
-	Webhook    WebhookConfig  `json:"webhook"`
-	Server     ServerConfig   `json:"server"`
+	Postgres    SQLConfig      `json:"postgres"`
+	Clickhouse  SQLConfig      `json:"clickhouse"`
+	Twitch      TwitchConfig   `json:"twitch"`
+	RabbitMQ    RabbitMQConfig `json:"rabbitmq"`
+	Redis       RedisConfig    `json:"redis"`
+	Webhook     WebhookConfig  `json:"webhook"`
+	Server      ServerConfig   `json:"server"`
 	EventServer EventServer    `json:"event_server"`
-	Minio      MinioBucketConfig
+	Minio       MinioBucketConfig
 }
 
 // SQLConfig represents configuration for connecting to a SQL database.
@@ -75,8 +75,8 @@ type EventServer struct {
 
 // MinioBucketConfig holds the configuration for Minio bucket.
 type MinioBucketConfig struct {
-	Host     string `json:"host"`
-	Port     string `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
+	Host      string `json:"host"`
+	Port      string `json:"port"`
+	AccessKey string `json:"AccessKey"`
+	SecretKey string `json:"SecretKey"`
 }

@@ -2,17 +2,17 @@
   "postgres": {
     "host": "localhost",
     "port": "5432",
-    "user": "postgres",
-    "password": "password",
-    "database": "exampledb",
+    "user": "test",
+    "password": "test",
+    "database": "test",
     "timeout": 30,
     "max_retries": 5
   },
   "clickhouse": {
     "host": "localhost",
-    "port": "9000",
-    "user": "default",
-    "password": "password",
+    "port": "8124",
+    "user": "test",
+    "password": "test",
     "database": "exampledb",
     "timeout": 30,
     "max_retries": 5
@@ -52,9 +52,9 @@
     "Port": "9051"
   },
   "Minio": {
-    "host": "",
-    "port": "",
-    "user": "",
-    "password": ""
+    "host": "localhost",
+    "port": "9000",
+    "AccessKey": "admin",
+    "SecretKey": "supersecretpassword"
   }
 }

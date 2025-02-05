@@ -54,9 +54,9 @@ var DefaultConfig = AppConfig{
 		Port: "9051",
 	},
 	Minio: MinioBucketConfig{
-		Host:     "localhost",
-		Port:     "9000",
-		User:     "minio",
-		Password: "minio",
+		Host:      "localhost",
+		Port:      "9000",
+		AccessKey: "minio",
+		SecretKey: "minio",
 	},
 }
