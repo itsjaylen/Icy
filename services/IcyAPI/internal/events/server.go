@@ -13,8 +13,8 @@ import (
 type AdminEvent struct {
 	Type    string `json:"type"`
 	Action  string `json:"action"`
-	Target  string `json:"target"`  // The user or object the action applies to
-	Message string `json:"message"` // Any additional message or reason for the action
+	Target  string `json:"target"`
+	Message string `json:"message"`
 }
 
 // PublishAdminEvent publishes an admin event to all clients

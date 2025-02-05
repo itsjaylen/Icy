@@ -10,6 +10,7 @@ type AppConfig struct {
 	Webhook    WebhookConfig  `json:"webhook"`
 	Server     ServerConfig   `json:"server"`
 	EventServer EventServer    `json:"event_server"`
+	Minio      MinioBucketConfig
 }
 
 // SQLConfig represents configuration for connecting to a SQL database.
@@ -70,4 +71,12 @@ type ServerConfig struct {
 type EventServer struct {
 	Host string
 	Port string
+}
+
+// MinioBucketConfig holds the configuration for Minio bucket.
+type MinioBucketConfig struct {
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
 }

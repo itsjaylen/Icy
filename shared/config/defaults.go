@@ -46,11 +46,17 @@ var DefaultConfig = AppConfig{
 	},
 	Server: ServerConfig{
 		Host:      "localhost",
-		Port:      "8080",
+		Port:      "9050",
 		SecretKey: "your-secret-key",
 	},
 	EventServer: EventServer{
 		Host: "localhost",
-		Port: "8081",
+		Port: "9051",
+	},
+	Minio: MinioBucketConfig{
+		Host:     "localhost",
+		Port:     "9000",
+		User:     "minio",
+		Password: "minio",
 	},
 }

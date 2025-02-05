@@ -113,7 +113,6 @@ func loadReleaseConfig() (*AppConfig, error) {
 		return nil, fmt.Errorf("error loading flags into koanf: %w", err)
 	}
 
-	// Load environment variables into Koanf
 	if err := k.Load(env.Provider("APP_", ".", func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(s, "APP_")), "_", ".")
 	}), nil); err != nil {

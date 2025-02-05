@@ -50,5 +50,11 @@
   "event_server": {
     "Host": "localhost",
     "Port": "9051"
+  },
+  "Minio": {
+    "host": "",
+    "port": "",
+    "user": "",
+    "password": ""
   }
 }
