@@ -1,8 +1,9 @@
 package rabbitmq
 
 import (
-	"github.com/streadway/amqp"
 	logger "itsjaylen/IcyLogger"
+
+	"github.com/streadway/amqp"
 )
 
 type RabbitMQClient struct {

@@ -9,6 +9,7 @@ import (
 	rabbitmq "IcyAPI/internal/api/repositories/RabbitMQ"
 	redis "IcyAPI/internal/api/repositories/Redis"
 	"IcyAPI/internal/api/server"
+	"IcyAPI/internal/api/services/webhooks"
 	"IcyAPI/internal/events"
 
 	config "itsjaylen/IcyConfig"
@@ -33,6 +34,12 @@ func NewApp(debug bool) (*App, error) {
 	cfg, err := config.LoadConfig(map[bool]string{true: "debug", false: "release"}[debug])
 	if err != nil {
 		return nil, fmt.Errorf("error loading config: %w", err)
+	}
+
+	if cfg.Webhook.Enabled {
+		if err := webhooks.SendDiscordWebhook(cfg.Webhook.URL, fmt.Sprintf("IcyAPI has started! 🚀 in mode: %v", debug)); err != nil {
+			logger.Error.Printf("Error sending Discord webhook: %v", err)
+		}
 	}
 
 	redisClient, err := InitRedis(cfg)
