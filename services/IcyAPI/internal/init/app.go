@@ -6,6 +6,7 @@ import (
 	clickhouse "IcyAPI/internal/api/repositories/ClickHouse"
 	minobucket "IcyAPI/internal/api/repositories/MinoBucket"
 	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"
+	rabbitmq "IcyAPI/internal/api/repositories/RabbitMQ"
 	redis "IcyAPI/internal/api/repositories/Redis"
 	"IcyAPI/internal/api/server"
 	"IcyAPI/internal/events"
@@ -23,6 +24,7 @@ type App struct {
 	ClickHouseClient *clickhouse.ClickHouseClient
 	PostgresClient   *postgresql.PostgresClient
 	MinioClient      *minobucket.MinioClient
+	RabbitMQ         *rabbitmq.RabbitMQClient
 }
 
 // NewApp initializes the application
@@ -53,6 +55,11 @@ func NewApp(debug bool) (*App, error) {
 		return nil, err
 	}
 
+	rabbitmqClient, err := InitRabbitMQ(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &App{
 		Cfg:              cfg,
 		APIServer:        server.NewAPIServer(cfg.Server.Host, cfg.Server.Port),
@@ -61,5 +68,6 @@ func NewApp(debug bool) (*App, error) {
 		ClickHouseClient: clickhouseClient,
 		PostgresClient:   postgresClient,
 		MinioClient:      minioClient,
+		RabbitMQ:         rabbitmqClient,
 	}, nil
 }

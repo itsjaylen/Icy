@@ -3,3 +3,4 @@
 *.json
 *.yml
 bin
+debug.json

@@ -56,7 +56,7 @@ var DefaultConfig = AppConfig{
 	Minio: MinioBucketConfig{
 		Host:      "localhost",
 		Port:      "9000",
-		AccessKey: "minio",
-		SecretKey: "minio",
+		AccessKey: "admin",
+		SecretKey: "supersecretpassword",
 	},
 }
