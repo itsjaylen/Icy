@@ -2,4 +2,4 @@
 *.log
 *.json
 bin
-services/IcyAPI/config/debug.json
+services/IcyAPI/config
