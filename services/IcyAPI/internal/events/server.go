@@ -106,7 +106,7 @@ func (s *EventServer) Start() error {
 }
 
 // Shutdown gracefully closes all client connections
-func (s *EventServer) Shutdown() {
+func (s *EventServer) Shutdown() error {
 	logger.Info.Println("Shutting down event server...")
 	s.mu.Lock()
 	for _, client := range s.clients {
@@ -114,4 +114,6 @@ func (s *EventServer) Shutdown() {
 	}
 	s.clients = make(map[int]*Client)
 	s.mu.Unlock()
+
+	return nil
 }

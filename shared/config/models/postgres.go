@@ -1,6 +1,5 @@
 package models
 
-
 import "github.com/spf13/pflag"
 
 // SQLConfig represents configuration for connecting to a SQL database.

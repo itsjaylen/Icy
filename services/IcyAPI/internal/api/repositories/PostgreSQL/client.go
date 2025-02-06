@@ -1,9 +1,10 @@
 package postgresql
 
 import (
+	logger "itsjaylen/IcyLogger"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	logger "itsjaylen/IcyLogger"
 )
 
 // PostgresClient wraps the GORM DB instance for PostgreSQL.

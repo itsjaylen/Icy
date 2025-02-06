@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"itsjaylen/IcyConfig/models"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +11,8 @@ import (
 	"github.com/knadh/koanf/providers/posflag"
 	"github.com/knadh/koanf/v2"
 	"github.com/spf13/pflag"
+
+	"itsjaylen/IcyConfig/models"
 )
 
 var k = koanf.New(".")
@@ -56,7 +57,8 @@ func ensureConfigDirExists(configDir string) error {
 	return nil
 }
 
-// ensureConfigFileExists ensures that the debug configuration file exists, creating it if necessary.
+// ensureConfigFileExists ensures that the debug configuration file exists, creating it if
+// necessary.
 func ensureConfigFileExists(configFile string) error {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		file, err := os.Create(configFile)

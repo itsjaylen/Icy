@@ -1,9 +1,10 @@
 package clickhouse
 
 import (
+	logger "itsjaylen/IcyLogger"
+
 	"gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
-	logger "itsjaylen/IcyLogger"
 )
 
 // ClickHouseClient wraps the GORM DB instance for ClickHouse.

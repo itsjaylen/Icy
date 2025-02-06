@@ -2,9 +2,10 @@ package minobucket
 
 import (
 	"context"
+	logger "itsjaylen/IcyLogger"
+
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	logger "itsjaylen/IcyLogger"
 )
 
 // MinioClient wraps the Minio instance.

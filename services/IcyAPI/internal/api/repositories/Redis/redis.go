@@ -19,7 +19,12 @@ func (r *RedisClient) Close() {
 }
 
 // Set stores a key-value pair in Redis with an optional expiration time.
-func (r *RedisClient) Set(ctx context.Context, key string, value string, expiration time.Duration) error {
+func (r *RedisClient) Set(
+	ctx context.Context,
+	key string,
+	value string,
+	expiration time.Duration,
+) error {
 	return r.Client.Set(ctx, key, value, expiration).Err()
 }
 
@@ -47,7 +52,12 @@ func (r *RedisClient) Delete(ctx context.Context, key string) error {
 }
 
 // SetJSON stores a struct in Redis as a JSON string.
-func (r *RedisClient) SetJSON(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+func (r *RedisClient) SetJSON(
+	ctx context.Context,
+	key string,
+	value interface{},
+	expiration time.Duration,
+) error {
 	jsonData, err := json.Marshal(value)
 	if err != nil {
 		return err

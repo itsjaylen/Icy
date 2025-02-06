@@ -24,7 +24,7 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "http_duration_seconds",
 			Help:    "Histogram of HTTP request durations",
-			Buckets: prometheus.DefBuckets, 
+			Buckets: prometheus.DefBuckets,
 		},
 		[]string{"method", "status_code", "path"},
 	)

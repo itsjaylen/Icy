@@ -9,5 +9,8 @@ import (
 
 // RegisterRoutes registers admin-related routes
 func RegisterRoutes(mux *http.ServeMux) {
-	mux.Handle("/admin/status", middleware.RateLimiter(http.HandlerFunc(admin.GetStatusHandler), 5, 10*time.Second))
+	mux.Handle(
+		"/admin/status",
+		middleware.RateLimiter(http.HandlerFunc(admin.GetStatusHandler), 5, 10*time.Second),
+	)
 }
