@@ -1,0 +1,45 @@
+linters:
+  enable:
+    - errcheck
+    - gofmt
+    - staticcheck
+    - ineffassign
+    - gocyclo
+    - unused
+    - typecheck
+    - unused
+    - misspell
+    - govet
+    - lll
+    - revive
+
+linters-settings:
+  gofmt:
+    simplify: true
+    min-confidence: 0.8
+  errcheck:
+    exclude-functions: github.com/pkg/errors
+  gocyclo:
+    min-complexity: 15
+  staticcheck:
+    checks:
+      - all
+  revive:
+    severity: warning
+    ignore:
+      - .*_test.go
+    config:
+      rules:
+        - whitespace
+        - method-name
+        - indentation
+
+  lll:
+    line-length: 100 #
+  misspell:
+    ignore-words:
+
+timeout: 5m
+
+output:
+  formats: colored-line-number

@@ -1,0 +1,40 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.23.5"
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run linter (optional, if you have a linter setup)
+        run: ./scripts/linter.sh
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build the application
+        run: go build -v
+
+      - name: Upload build artifact (optional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-build-artifact
+          path: ./IcyAPI/bin/api
