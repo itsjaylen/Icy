@@ -1,4 +1,4 @@
-package init
+package appinit
 
 import (
 	clickhouse "IcyAPI/internal/api/repositories/ClickHouse"

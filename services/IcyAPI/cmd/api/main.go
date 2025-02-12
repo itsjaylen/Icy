@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -6,7 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	appInit "IcyAPI/internal/init"
+	"IcyAPI/internal/api/server"
+	appInit "IcyAPI/internal/appinit"
 	logger "itsjaylen/IcyLogger"
 
 	"github.com/spf13/pflag"
@@ -16,21 +18,23 @@ func main() {
 	debug := pflag.Bool("debug", false, "Enable debug mode")
 	pflag.Parse()
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	app, err := appInit.NewApp(*debug)
 	if err != nil {
 		logger.Error.Fatalf("Failed to initialize app: %v", err)
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	apiServer := server.NewAPIServer(app)
 
-	go startServer("API", app.APIServer.Start, stop)
+	go startServer("API", apiServer.Start, stop)
 	go startServer("Event", app.EventServer.Start, stop)
 
 	<-ctx.Done()
 	logger.Info.Println("Shutting down servers...")
 
-	if err := app.APIServer.Shutdown(); err != nil {
+	if err := apiServer.Shutdown(); err != nil {
 		logger.Error.Printf("Error shutting down API server: %v", err)
 	}
 
@@ -41,6 +45,7 @@ func main() {
 	app.RedisClient.Close()
 	logger.Info.Println("Servers gracefully stopped.")
 }
+
 
 func startServer(name string, startFunc func() error, stop context.CancelFunc) {
 	if err := startFunc(); err != nil {

@@ -3,6 +3,7 @@ package server
 import (
 	"IcyAPI/internal/api/middleware"
 	"IcyAPI/internal/api/routes"
+	"IcyAPI/internal/appinit"
 	"context"
 	"fmt"
 	logger "itsjaylen/IcyLogger"
@@ -18,12 +19,12 @@ type Server struct {
 	server  *http.Server
 }
 
-// NewServer creates a new server instance
-func NewAPIServer(host, port string) *Server {
+// NewAPIServer creates a new server instance with injected dependencies
+func NewAPIServer(app *appinit.App) *Server {
 	mux := http.NewServeMux()
 
-	// Register routes
-	routes.InitRegisterRoutes(mux)
+	// Register routes with dependencies
+	routes.InitRegisterRoutes(mux, app)
 
 	// Apply middlewares
 	handler := middleware.LoggingMiddleware(mux)
@@ -32,17 +33,18 @@ func NewAPIServer(host, port string) *Server {
 	handler = middleware.ErrorHandler(handler)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Addr:    fmt.Sprintf("%s:%s", app.Cfg.Server.Host, app.Cfg.Server.Port),
 		Handler: handler,
 	}
 
 	return &Server{
-		Host:    host,
-		Port:    port,
+		Host:    app.Cfg.Server.Host,
+		Port:    app.Cfg.Server.Port,
 		Handler: handler,
 		server:  srv,
 	}
 }
+
 
 // Start runs the server
 func (s *Server) Start() error {

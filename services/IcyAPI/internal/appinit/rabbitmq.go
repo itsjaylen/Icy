@@ -1,4 +1,4 @@
-package init
+package appinit
 
 import (
 	rabbitmq "IcyAPI/internal/api/repositories/RabbitMQ"

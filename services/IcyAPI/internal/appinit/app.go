@@ -1,4 +1,4 @@
-package init
+package appinit
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"
 	rabbitmq "IcyAPI/internal/api/repositories/RabbitMQ"
 	redis "IcyAPI/internal/api/repositories/Redis"
-	"IcyAPI/internal/api/server"
 	"IcyAPI/internal/api/services/webhooks"
 	"IcyAPI/internal/events"
 
@@ -19,7 +18,6 @@ import (
 // App structure to hold dependencies
 type App struct {
 	Cfg              *config.AppConfig
-	APIServer        *server.Server
 	EventServer      *events.EventServer
 	RedisClient      *redis.RedisClient
 	ClickHouseClient *clickhouse.ClickHouseClient
@@ -69,7 +67,6 @@ func NewApp(debug bool) (*App, error) {
 
 	return &App{
 		Cfg:              cfg,
-		APIServer:        server.NewAPIServer(cfg.Server.Host, cfg.Server.Port),
 		EventServer:      events.NewEventServer(cfg.Server.Host, cfg.EventServer.Port),
 		RedisClient:      redisClient,
 		ClickHouseClient: clickhouseClient,

@@ -1,4 +1,4 @@
-package init
+package appinit
 
 import (
 	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"

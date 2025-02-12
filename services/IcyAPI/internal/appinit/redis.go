@@ -1,4 +1,4 @@
-package init
+package appinit
 
 import (
 	redis "IcyAPI/internal/api/repositories/Redis"

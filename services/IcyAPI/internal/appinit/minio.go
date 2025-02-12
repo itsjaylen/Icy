@@ -1,4 +1,4 @@
-package init
+package appinit
 
 import (
 	minobucket "IcyAPI/internal/api/repositories/MinoBucket"
