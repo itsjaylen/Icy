@@ -6,30 +6,28 @@ import (
 	"IcyAPI/internal/utils"
 	"context"
 	"net/http"
-	"time"
 )
 
-// UserController handles user-related endpoints
-type UserController struct {
+// AdminController handles user-related endpoints
+type AdminController struct {
 	RedisClient    *redis.RedisClient
 	PostgresClient *postgresql.PostgresClient
 }
 
-// NewUserController initializes UserController with dependencies
-func NewUserController(redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient) *UserController {
-	return &UserController{
+// NewAdminController initializes AdminController with dependencies
+func NewAdminController(redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient) *AdminController {
+	return &AdminController{
 		RedisClient:    redisClient,
 		PostgresClient: postgresClient,
 	}
 }
 
 // HandleUserRequest example handler using dependencies
-func (c *UserController) HandleUserRequest(w http.ResponseWriter, r *http.Request) {
+func (c *AdminController) HandleUserRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background() // Create a new context
-	expiration := time.Hour     // Set expiration duration
 
 	// Use Redis Set with required arguments
-	err := c.RedisClient.Set(ctx, "key", "value", expiration)
+	err := c.RedisClient.Set(ctx, "my_key", "my_value", 0)
 	if err != nil {
 		http.Error(w, "Failed to set key in Redis", http.StatusInternalServerError)
 		return

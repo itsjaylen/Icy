@@ -11,7 +11,7 @@ import (
 
 // RegisterRoutes registers admin-related routes
 func RegisterRoutes(mux *http.ServeMux, redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient) {
-	userController := admin.NewUserController(redisClient, postgresClient)
+	AdminController := admin.NewAdminController(redisClient, postgresClient)
 
 	mux.Handle(
 		"/admin/status",
@@ -19,6 +19,6 @@ func RegisterRoutes(mux *http.ServeMux, redisClient *redis.RedisClient, postgres
 	)
 	mux.Handle(
 		"/admin/users",
-		middleware.RateLimiter(http.HandlerFunc(userController.HandleUserRequest), 5, 10*time.Second),
+		middleware.RateLimiter(http.HandlerFunc(AdminController.HandleUserRequest), 5, 10*time.Second),
 	)
 }
