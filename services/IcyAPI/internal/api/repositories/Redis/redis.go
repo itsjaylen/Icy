@@ -3,20 +3,11 @@ package redis
 import (
 	"context"
 	"encoding/json"
-	logger "itsjaylen/IcyLogger"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
-// Close shuts down the Redis connection.
-func (r *RedisClient) Close() {
-	if err := r.Client.Close(); err != nil {
-		logger.Error.Printf("Error closing Redis connection: %v", err)
-	} else {
-		logger.Info.Println("Redis connection closed")
-	}
-}
 
 // Set stores a key-value pair in Redis with an optional expiration time.
 func (r *RedisClient) Set(
@@ -75,4 +66,45 @@ func (r *RedisClient) GetJSON(ctx context.Context, key string, dest interface{})
 		return nil
 	}
 	return json.Unmarshal([]byte(jsonStr), dest)
+}
+
+// Ping checks if Redis is responsive.
+func (r *RedisClient) Ping(ctx context.Context) error {
+	_, err := r.Client.Ping(ctx).Result()
+	return err
+}
+
+// TTL retrieves the time-to-live (TTL) of a key in Redis.
+func (r *RedisClient) TTL(ctx context.Context, key string) (time.Duration, error) {
+	return r.Client.TTL(ctx, key).Result()
+}
+
+// MSet sets multiple key-value pairs in Redis.
+func (r *RedisClient) MSet(ctx context.Context, keyValuePairs map[string]interface{}, expiration time.Duration) error {
+	pipe := r.Client.Pipeline()
+	for key, value := range keyValuePairs {
+		pipe.Set(ctx, key, value, expiration)
+	}
+	_, err := pipe.Exec(ctx)
+	return err
+}
+
+// MGet retrieves multiple values from Redis by key.
+func (r *RedisClient) MGet(ctx context.Context, keys ...string) ([]interface{}, error) {
+	return r.Client.MGet(ctx, keys...).Result()
+}
+
+// MDel removes multiple keys from Redis.
+func (r *RedisClient) MDel(ctx context.Context, keys ...string) error {
+	return r.Client.Del(ctx, keys...).Err()
+}
+
+// Latency measures the response time of a Redis PING command.
+func (r *RedisClient) Latency(ctx context.Context) (time.Duration, error) {
+	start := time.Now()
+	_, err := r.Client.Ping(ctx).Result()
+	if err != nil {
+		return 0, err
+	}
+	return time.Since(start), nil
 }

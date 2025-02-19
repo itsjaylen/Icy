@@ -6,6 +6,8 @@ import (
 	"IcyAPI/internal/utils"
 	"context"
 	"net/http"
+
+	logger "itsjaylen/IcyLogger"
 )
 
 // AdminController handles user-related endpoints
@@ -24,7 +26,7 @@ func NewAdminController(redisClient *redis.RedisClient, postgresClient *postgres
 
 // HandleUserRequest example handler using dependencies
 func (c *AdminController) HandleUserRequest(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background() // Create a new context
+	ctx := context.Background()
 
 	// Use Redis Set with required arguments
 	err := c.RedisClient.Set(ctx, "my_key", "my_value", 0)
@@ -33,11 +35,26 @@ func (c *AdminController) HandleUserRequest(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	w.Write([]byte("User request handled"))
+	latency, err := c.RedisClient.Latency(ctx)
+	if err != nil {
+		logger.Error.Printf("Error measuring Redis latency: %v", err)
+	} else {
+		logger.Info.Printf("Redis latency: %v", latency)
+	}
+
+	if err != nil {
+		logger.Error.Printf("Error measuring Redis latency: %v", err)
+	} else {
+		logger.Info.Printf("Redis latency: %v", latency)
+	}
+	utils.WriteJSONResponse(w, http.StatusOK, map[string]interface{}{
+		"latency": latency.Nanoseconds(),
+	})
+
 }
 
 // GetStatusHandler handles the /admin/status route
-func GetStatusHandler(w http.ResponseWriter, r *http.Request) {
+func (c *AdminController) GetStatusHandler(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{"status": "ok"}
 	utils.WriteJSONResponse(w, http.StatusOK, response)
 }

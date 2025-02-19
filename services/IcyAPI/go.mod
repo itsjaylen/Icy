@@ -1,6 +1,6 @@
 module IcyAPI
 
-go 1.23.5
+go 1.24.0
 
 replace itsjaylen/IcyLogger => ../../shared/logger
 
@@ -50,9 +50,11 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
 	go.opentelemetry.io/otel v1.26.0 // indirect
 	go.opentelemetry.io/otel/trace v1.26.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
@@ -60,12 +62,14 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	golang.org/x/time v0.8.0 // indirect
+	google.golang.org/protobuf v1.35.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+	github.com/hibiken/asynq v0.25.1
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/knadh/koanf/providers/env v1.0.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.84

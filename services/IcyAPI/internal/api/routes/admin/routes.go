@@ -15,7 +15,7 @@ func RegisterRoutes(mux *http.ServeMux, redisClient *redis.RedisClient, postgres
 
 	mux.Handle(
 		"/admin/status",
-		middleware.RateLimiter(http.HandlerFunc(admin.GetStatusHandler), 5, 10*time.Second),
+		middleware.RateLimiter(http.HandlerFunc(AdminController.GetStatusHandler), 5, 10*time.Second),
 	)
 	mux.Handle(
 		"/admin/users",

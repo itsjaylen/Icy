@@ -9,10 +9,13 @@ import (
 
 	"IcyAPI/internal/api/server"
 	appInit "IcyAPI/internal/appinit"
+	"IcyAPI/internal/workers"
 	logger "itsjaylen/IcyLogger"
 
 	"github.com/spf13/pflag"
 )
+
+// In main.go
 
 func main() {
 	debug := pflag.Bool("debug", false, "Enable debug mode")
@@ -27,6 +30,8 @@ func main() {
 	}
 
 	apiServer := server.NewAPIServer(app)
+
+	workers.SetupTaskManager(app)
 
 	go startServer("API", apiServer.Start, stop)
 	go startServer("Event", app.EventServer.Start, stop)
@@ -45,7 +50,6 @@ func main() {
 	app.RedisClient.Close()
 	logger.Info.Println("Servers gracefully stopped.")
 }
-
 
 func startServer(name string, startFunc func() error, stop context.CancelFunc) {
 	if err := startFunc(); err != nil {

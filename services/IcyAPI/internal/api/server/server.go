@@ -4,6 +4,7 @@ import (
 	"IcyAPI/internal/api/middleware"
 	"IcyAPI/internal/api/routes"
 	"IcyAPI/internal/appinit"
+	"IcyAPI/internal/workers/tasks/health"
 	"context"
 	"fmt"
 	logger "itsjaylen/IcyLogger"
@@ -22,6 +23,13 @@ type Server struct {
 // NewAPIServer creates a new server instance with injected dependencies
 func NewAPIServer(app *appinit.App) *Server {
 	mux := http.NewServeMux()
+
+	// Register healthz endpoint
+	mux.HandleFunc("/healthz", health.HealthzHandler)
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
 	// Register routes with dependencies
 	routes.InitRegisterRoutes(mux, app)
