@@ -52,9 +52,3 @@ func (c *AdminController) HandleUserRequest(w http.ResponseWriter, r *http.Reque
 	})
 
 }
-
-// GetStatusHandler handles the /admin/status route
-func (c *AdminController) GetStatusHandler(w http.ResponseWriter, r *http.Request) {
-	response := map[string]string{"status": "ok"}
-	utils.WriteJSONResponse(w, http.StatusOK, response)
-}

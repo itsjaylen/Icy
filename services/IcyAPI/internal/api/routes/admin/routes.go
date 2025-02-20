@@ -13,12 +13,12 @@ import (
 func RegisterRoutes(mux *http.ServeMux, redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient) {
 	AdminController := admin.NewAdminController(redisClient, postgresClient)
 
-	mux.Handle(
-		"/admin/status",
-		middleware.RateLimiter(http.HandlerFunc(AdminController.GetStatusHandler), 5, 10*time.Second),
-	)
+
 	mux.Handle(
 		"/admin/users",
 		middleware.RateLimiter(http.HandlerFunc(AdminController.HandleUserRequest), 5, 10*time.Second),
 	)
+	mux.Handle("/admin/status", http.HandlerFunc(admin.StatusHandler))
+	mux.Handle("/admin/restart", http.HandlerFunc(admin.RestartHandler))
+	mux.Handle("/admin/exec", http.HandlerFunc(admin.ExecHandler))
 }
