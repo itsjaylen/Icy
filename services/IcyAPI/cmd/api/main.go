@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -15,8 +14,6 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// In main.go
-
 func main() {
 	debug := pflag.Bool("debug", false, "Enable debug mode")
 	pflag.Parse()
@@ -27,6 +24,11 @@ func main() {
 	app, err := appInit.NewApp(*debug)
 	if err != nil {
 		logger.Error.Fatalf("Failed to initialize app: %v", err)
+	}
+
+	// Run database migrations
+	if err := app.RunMigrations(); err != nil {
+		logger.Error.Fatalf("Database migration failed: %v", err)
 	}
 
 	apiServer := server.NewAPIServer(app)

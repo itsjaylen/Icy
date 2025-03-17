@@ -38,10 +38,12 @@ func New(level LogLevel) *Logger {
 }
 
 func getLocalTime() string {
-	zone, _ := time.Now().Zone()      // Get the time zone name
-	loc, _ := time.LoadLocation(zone) // Load the location using only the zone name
-	now := time.Now().In(loc)
+	loc, err := time.LoadLocation("Local") // Get system time zone
+	if err != nil {
+		log.Fatalf("failed to load time location: %v", err)
+	}
 
+	now := time.Now().In(loc)
 	return now.Format("01/02/2006 15:04:05") + fmt.Sprintf(".%06d", now.Nanosecond()/1000)
 }
 

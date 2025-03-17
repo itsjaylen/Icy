@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var rateLimitStore     sync.Map
+
 // rateLimiter tracks requests per client
 type rateLimiter struct {
 	sync.Mutex
@@ -43,4 +45,16 @@ func RateLimiter(next http.Handler, limit int, duration time.Duration) http.Hand
 		rl.visits[ip]++
 		next.ServeHTTP(w, r)
 	})
+}
+
+func RateLimitMiddleware(next http.HandlerFunc, limit time.Duration) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		clientIP := r.RemoteAddr
+		if lastRequest, exists := rateLimitStore.Load(clientIP); exists && time.Since(lastRequest.(time.Time)) < limit {
+			http.Error(w, "Too many requests", http.StatusTooManyRequests)
+			return
+		}
+		rateLimitStore.Store(clientIP, time.Now())
+		next(w, r)
+	}
 }

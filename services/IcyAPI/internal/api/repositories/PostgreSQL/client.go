@@ -57,3 +57,12 @@ func (p *PostgresClient) Reconnect() {
 		logger.Info.Println("Reconnected to PostgreSQL successfully")
 	}
 }
+
+// Migrate runs the database migrations for the provided models.
+func (p *PostgresClient) Migrate(models ...any) error {
+	if err := p.DB.AutoMigrate(models...); err != nil {
+		return err
+	}
+	logger.Info.Println("Database migrations completed successfully")
+	return nil
+}

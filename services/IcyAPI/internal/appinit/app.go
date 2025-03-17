@@ -10,6 +10,7 @@ import (
 	redis "IcyAPI/internal/api/repositories/Redis"
 	"IcyAPI/internal/api/services/webhooks"
 	"IcyAPI/internal/events"
+	"IcyAPI/internal/models"
 
 	config "itsjaylen/IcyConfig"
 	logger "itsjaylen/IcyLogger"
@@ -74,4 +75,9 @@ func NewApp(debug bool) (*App, error) {
 		MinioClient:      minioClient,
 		RabbitMQ:         rabbitmqClient,
 	}, nil
+}
+
+// RunMigrations handles database migrations
+func (a *App) RunMigrations() error {
+	return a.PostgresClient.Migrate(&models.User{})
 }

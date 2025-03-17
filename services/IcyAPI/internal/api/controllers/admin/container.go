@@ -76,6 +76,9 @@ func ExecuteCommand(command string, args ...string) (string, error) {
 
 // StatusHandler returns the container's status
 func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	if !IsRunningInContainer() {
+		return
+	}
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		utils.WriteJSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to create Docker client"})
