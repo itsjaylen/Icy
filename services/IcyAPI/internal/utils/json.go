@@ -8,7 +8,7 @@ import (
 // WriteJSONResponse is a helper function that encodes a response to JSON and writes it to the
 // ResponseWriter.
 // It handles errors and sends an appropriate HTTP status code if encoding fails.
-func WriteJSONResponse(w http.ResponseWriter, statusCode int, response interface{}) {
+func WriteJSONResponse(w http.ResponseWriter, statusCode int, response any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 

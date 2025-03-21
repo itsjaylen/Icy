@@ -10,6 +10,7 @@ require itsjaylen/IcyLogger v0.0.0
 
 require (
 	github.com/spf13/pflag v1.0.5
+	golang.org/x/crypto v0.31.0
 	gorm.io/gorm v1.25.10
 	itsjaylen/IcyConfig v0.0.0
 )
@@ -71,7 +72,6 @@ require (
 	go.opentelemetry.io/otel v1.26.0 // indirect
 	go.opentelemetry.io/otel/metric v1.26.0 // indirect
 	go.opentelemetry.io/otel/trace v1.26.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
