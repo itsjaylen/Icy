@@ -86,7 +86,7 @@ require (
 require (
 	github.com/docker/docker v27.5.1+incompatible
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/hibiken/asynq v0.25.1
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/knadh/koanf/providers/env v1.0.0 // indirect
