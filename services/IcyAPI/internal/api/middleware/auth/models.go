@@ -3,6 +3,7 @@ package auth
 import (
 	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"
 	redis "IcyAPI/internal/api/repositories/Redis"
+	config "itsjaylen/IcyConfig"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -36,4 +37,5 @@ type Claims struct {
 type AuthService struct {
 	PostgresClient *postgresql.PostgresClient
 	RedisClient    *redis.RedisClient
+	Config         *config.AppConfig
 }

@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	config "itsjaylen/IcyConfig"
 	logger "itsjaylen/IcyLogger"
 	"net/http"
 	"time"
@@ -23,7 +24,7 @@ import (
 )
 
 var (
-	JwtSecret          = []byte("SsYMx7hdNterwN011bzykWrMxjymmiu6")
+	// JwtSecret          = []byte("SsYMx7hdNterwN011bzykWrMxjymmiu6")
 	adminWhitelist     = map[string]bool{"superadmin": true}
 	ClaimsContextKey   = contextKey("claims")
 	oauth2GoogleConfig oauth2.Config
@@ -64,10 +65,11 @@ func init() {
 type contextKey string
 
 // NewAuthService initializes AuthService with dependencies
-func NewAuthService(redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient) *AuthService {
+func NewAuthService(redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient, config *config.AppConfig) *AuthService {
 	return &AuthService{
 		PostgresClient: postgresClient,
 		RedisClient:    redisClient,
+		Config:         config,
 	}
 }
 
@@ -93,13 +95,18 @@ func (auth *AuthService) GenerateTokens(username, role string) (string, string, 
 		Username: username,
 		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)), // 1 month expiration
 		},
 	}
-	accessToken, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString(JwtSecret)
+
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(auth.Config.Server.JwtSecret))
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate access token: %w", err)
+	}
 
 	refreshToken := fmt.Sprintf("refresh_%s_%d", username, time.Now().UnixNano())
-	err := auth.RedisClient.Set(context.Background(), fmt.Sprintf("users:%s:refresh_token", username), refreshToken, time.Hour)
+
+	err = auth.RedisClient.Set(context.Background(), fmt.Sprintf("users:%s:refresh_token", username), refreshToken, time.Hour)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to store refresh token: %w", err)
 	}
@@ -107,19 +114,27 @@ func (auth *AuthService) GenerateTokens(username, role string) (string, string, 
 	return accessToken, refreshToken, nil
 }
 
+
 func AdminHandler(w http.ResponseWriter, r *http.Request) {
 	claims := r.Context().Value(ClaimsContextKey).(*Claims)
 	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("Welcome, Admin %s!", claims.Username)})
 }
 
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-	claims, ok := r.Context().Value(ClaimsContextKey).(*Claims)
-	if !ok {
-		http.Error(w, "Claims not found", http.StatusUnauthorized)
-		return
-	}
-	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("Welcome, User %s!", claims.Username)})
+    claims, ok := r.Context().Value(ClaimsContextKey).(*Claims)
+    if !ok {
+        fmt.Println("Claims not found in context") // Debug log
+        http.Error(w, "Claims not found", http.StatusUnauthorized)
+        return
+    }
+
+    fmt.Println("User authenticated:", claims.Username) // Debug log
+
+    utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
+        "message": fmt.Sprintf("Welcome, User %s!", claims.Username),
+    })
 }
+
 
 func (auth *AuthService) RegenAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value(ClaimsContextKey).(*Claims)
@@ -135,7 +150,6 @@ func (auth *AuthService) RegenAPIKeyHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Generate a new API key
 	newAPIKey := auth.GenerateAPIKey()
 	user.APIKey = newAPIKey
 

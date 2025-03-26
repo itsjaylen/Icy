@@ -47,7 +47,8 @@ var DefaultConfig = AppConfig{
 	Server: ServerConfig{
 		Host:      "localhost",
 		Port:      "9050",
-		SecretKey: "your-secret-key",
+		JwtSecret: []byte("your-secret-key"),
+		JwtExpiry: 3600,
 	},
 	EventServer: EventServer{
 		Host: "localhost",

@@ -64,7 +64,8 @@ type WebhookConfig struct {
 type ServerConfig struct {
 	Host      string `json:"host"`
 	Port      string `json:"port"`
-	SecretKey string `json:"secret_key,omitempty"`
+	JwtSecret []byte `json:"secret_key,omitempty"`
+	JwtExpiry int    `json:"jwt_expiry"`
 }
 
 // EventServer holds the configuration for the event server.

@@ -9,14 +9,15 @@ import (
 )
 
 func RegisterRoutes(mux *http.ServeMux, app *appinit.App) {
-	authhandler := auth.NewAuthService(app.RedisClient, app.PostgresClient)
+	authhandler := auth.NewAuthService(app.RedisClient, app.PostgresClient, app.Cfg)
 
 	mux.HandleFunc("/signup", middleware.RateLimitMiddleware(authhandler.SignupHandler, 1*time.Second))
 	mux.HandleFunc("/login", middleware.RateLimitMiddleware(authhandler.LoginHandler, 1*time.Second))
 	mux.HandleFunc("/refresh", authhandler.RefreshTokenHandler)
-	mux.HandleFunc("/admin", middleware.RoleMiddleware(auth.AdminHandler, "admin"))
-	mux.HandleFunc("/user", middleware.RoleMiddleware(auth.UserHandler, "user", "admin"))
-	mux.HandleFunc("/regen-api-key", middleware.RoleMiddleware(authhandler.RegenAPIKeyHandler, "user", "admin"))
+	mux.HandleFunc("/admin", middleware.RoleMiddleware(app, auth.AdminHandler, "admin"))
+	mux.HandleFunc("/user", middleware.RoleMiddleware(app, auth.UserHandler, "user", "admin"))
+	mux.HandleFunc("/regen-api-key", middleware.RoleMiddleware(app, authhandler.RegenAPIKeyHandler, "user", "admin"))
+
 	mux.HandleFunc("/logout", authhandler.LogoutHandler)
 
 	// Google OAuth

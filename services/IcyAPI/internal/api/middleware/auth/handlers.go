@@ -16,6 +16,7 @@ import (
 
 func (auth *AuthService) SignupHandler(w http.ResponseWriter, r *http.Request) {
 	var signupRequest UserSignupRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&signupRequest); err != nil {
 		utils.WriteJSONResponse(w, http.StatusBadRequest, ErrorResponse{
 			Message: "Bad request - Invalid input",
@@ -145,7 +146,7 @@ func (auth *AuthService) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract claims from token
 	claims := &Claims{}
 	_, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
-		return JwtSecret, nil
+		return auth.Config.Server.JwtSecret, nil
 	})
 
 	if err != nil {
