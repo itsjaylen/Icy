@@ -2,11 +2,13 @@ package webhooks
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
-	logger "itsjaylen/IcyLogger"
 	"net/http"
 	"time"
+
+	logger "itsjaylen/IcyLogger"
 )
 
 type DiscordWebhook struct {
@@ -33,11 +35,16 @@ func SendDiscordWebhook(webhookURL, message string) error {
 	var lastErr error
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		req, err := http.NewRequest("POST", webhookURL, bytes.NewBuffer(data))
+		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+		defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "POST", webhookURL, bytes.NewBuffer(data))
+
 		if err != nil {
 			lastErr = err
 			logger.Error.Printf("[Webhook] Attempt %d failed: %v", attempt, err)
 			time.Sleep(retryDelay)
+
 			continue
 		}
 		req.Header.Set("Content-Type", "application/json")
@@ -47,12 +54,14 @@ func SendDiscordWebhook(webhookURL, message string) error {
 			lastErr = err
 			logger.Error.Printf("[Webhook] Attempt %d failed: %v", attempt, err)
 			time.Sleep(retryDelay)
+
 			continue
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			logger.Info.Println("[Webhook] Discord webhook sent successfully!")
+
 			return nil
 		}
 
@@ -62,5 +71,6 @@ func SendDiscordWebhook(webhookURL, message string) error {
 	}
 
 	logger.Error.Printf("[Webhook] Last error: %v", lastErr)
+
 	return lastErr
 }

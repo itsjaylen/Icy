@@ -1,14 +1,14 @@
 package workers
 
 import (
-	logger "itsjaylen/IcyLogger"
 	"time"
 
 	"github.com/hibiken/asynq"
+	logger "itsjaylen/IcyLogger"
 )
 
+// SchedulePeriodicHealthChecks enqueues health check tasks periodically.
 func SchedulePeriodicHealthChecks(client *asynq.Client) {
-	// Set the ticker to run every 5 minutes (for example)
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 

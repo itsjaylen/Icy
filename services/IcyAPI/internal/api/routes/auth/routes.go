@@ -1,15 +1,18 @@
+// Package auth provides routes for user authentication and authorization.
 package auth
 
 import (
-	"IcyAPI/internal/api/middleware"
-	auth "IcyAPI/internal/api/middleware/auth"
-	"IcyAPI/internal/appinit"
 	"net/http"
 	"time"
+
+	"github.com/itsjaylen/IcyAPI/internal/api/middleware"
+	auth "github.com/itsjaylen/IcyAPI/internal/api/middleware/auth"
+	"github.com/itsjaylen/IcyAPI/internal/appinit"
 )
 
+// RegisterRoutes registers routes for user authentication and authorization. TODO: Complete the ouath.
 func RegisterRoutes(mux *http.ServeMux, app *appinit.App) {
-	authhandler := auth.NewAuthService(app.RedisClient, app.PostgresClient, app.Cfg)
+	authhandler := auth.NewAuthService(app.Client, app.PostgresClient, app.Cfg)
 
 	mux.HandleFunc("/signup", middleware.RateLimitMiddleware(authhandler.SignupHandler, 1*time.Second))
 	mux.HandleFunc("/login", middleware.RateLimitMiddleware(authhandler.LoginHandler, 1*time.Second))

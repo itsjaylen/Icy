@@ -1,3 +1,4 @@
+// Package main is the entry point for the IcyAPI.
 package main
 
 import (
@@ -6,12 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"IcyAPI/internal/api/server"
-	appInit "IcyAPI/internal/appinit"
-	"IcyAPI/internal/workers"
-	logger "itsjaylen/IcyLogger"
-
+	"github.com/itsjaylen/IcyAPI/internal/api/server"
+	appInit "github.com/itsjaylen/IcyAPI/internal/appinit"
+	"github.com/itsjaylen/IcyAPI/internal/workers"
 	"github.com/spf13/pflag"
+	logger "itsjaylen/IcyLogger"
 )
 
 func main() {
@@ -49,7 +49,7 @@ func main() {
 		logger.Error.Printf("Error shutting down Event server: %v", err)
 	}
 
-	app.RedisClient.Close()
+	app.Client.Close()
 	logger.Info.Println("Servers gracefully stopped.")
 }
 

@@ -1,11 +1,14 @@
+// Package appinit provides functions to initialize PostgreSQL dependencies.
 package appinit
 
 import (
-	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"
 	"fmt"
+
+	postgresql "github.com/itsjaylen/IcyAPI/internal/api/repositories/PostgreSQL"
 	config "itsjaylen/IcyConfig"
 )
 
+// InitPostgreSQL initializes a PostgreSQL client.
 func InitPostgreSQL(cfg *config.AppConfig) (*postgresql.PostgresClient, error) {
 	addr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -15,5 +18,6 @@ func InitPostgreSQL(cfg *config.AppConfig) (*postgresql.PostgresClient, error) {
 		cfg.Postgres.Password,
 		cfg.Postgres.Database,
 	)
+
 	return postgresql.NewPostgresClient(addr)
 }

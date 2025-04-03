@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-// LoggingMiddleware logs HTTP requests similar to Gin's logger
+// LoggingMiddleware logs HTTP requests similar to Gin's logger.
 func LoggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		start := time.Now()
 
 		// Create a response writer wrapper to capture status code
-		ww := &responseWriterWrapper{ResponseWriter: w, statusCode: http.StatusOK}
-		next.ServeHTTP(ww, r)
+		ww := &responseWriterWrapper{ResponseWriter: writer, statusCode: http.StatusOK}
+		next.ServeHTTP(ww, request)
 
 		// Log request details
 		duration := time.Since(start)
 		log.Printf("%s %s %d %s - %s",
-			r.Method,
-			r.URL.Path,
+			request.Method,
+			request.URL.Path,
 			ww.statusCode,
 			duration,
-			r.UserAgent(),
+			request.UserAgent(),
 		)
 	})
 }

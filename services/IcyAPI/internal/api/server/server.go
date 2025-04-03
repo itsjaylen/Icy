@@ -1,34 +1,39 @@
+// Package server provides the API server implementation.
 package server
 
 import (
-	"IcyAPI/internal/api/middleware"
-	"IcyAPI/internal/api/routes"
-	"IcyAPI/internal/appinit"
-	"IcyAPI/internal/workers/tasks/health"
 	"context"
 	"fmt"
-	logger "itsjaylen/IcyLogger"
 	"net/http"
 	"time"
+
+	"github.com/itsjaylen/IcyAPI/internal/api/middleware"
+	"github.com/itsjaylen/IcyAPI/internal/api/routes"
+	"github.com/itsjaylen/IcyAPI/internal/appinit"
+	"github.com/itsjaylen/IcyAPI/internal/workers/tasks/health"
+	logger "itsjaylen/IcyLogger"
 )
 
-// Server struct to hold server configurations
+// Server struct to hold server configurations.
 type Server struct {
-	Host    string
-	Port    string
 	Handler http.Handler
 	server  *http.Server
+	Host    string
+	Port    string
 }
 
-// NewAPIServer creates a new server instance with injected dependencies
+// NewAPIServer creates a new server instance with injected dependencies.
 func NewAPIServer(app *appinit.App) *Server {
 	mux := http.NewServeMux()
 
 	// Register healthz endpoint
 	mux.HandleFunc("/healthz", health.HealthzHandler)
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			logger.Error.Printf("Failed to write response: %v", err)
+		}
 	})
 
 	// Register routes with dependencies
@@ -36,13 +41,14 @@ func NewAPIServer(app *appinit.App) *Server {
 
 	// Apply middlewares
 	handler := middleware.LoggingMiddleware(mux)
-	handler = middleware.AnalyticsMiddleware(handler)
+	// TODO: Fix this later: handler = middleware.AnalyticsMiddleware(handler)
 	handler = middleware.RecoveryMiddleware(handler)
 	handler = middleware.ErrorHandler(handler)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%s", app.Cfg.Server.Host, app.Cfg.Server.Port),
-		Handler: handler,
+		Addr:              fmt.Sprintf("%s:%s", app.Cfg.Server.Host, app.Cfg.Server.Port),
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	return &Server{
@@ -53,16 +59,17 @@ func NewAPIServer(app *appinit.App) *Server {
 	}
 }
 
+// Start runs the server.
+func (server *Server) Start() error {
+	logger.Info.Printf("Starting server on %s:%s", server.Host, server.Port)
 
-// Start runs the server
-func (s *Server) Start() error {
-	logger.Info.Printf("Starting server on %s:%s", s.Host, s.Port)
-	return s.server.ListenAndServe()
+	return server.server.ListenAndServe()
 }
 
-// Shutdown gracefully stops the server
-func (s *Server) Shutdown() error {
+// Shutdown gracefully stops the server.
+func (server *Server) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	return s.server.Shutdown(ctx)
+
+	return server.server.Shutdown(ctx)
 }

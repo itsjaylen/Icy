@@ -1,12 +1,16 @@
+// Package appinit provides functions to initialize Redis dependencies.
 package appinit
 
 import (
-	redis "IcyAPI/internal/api/repositories/Redis"
 	"fmt"
+
+	redis "github.com/itsjaylen/IcyAPI/internal/api/repositories/Redis"
 	config "itsjaylen/IcyConfig"
 )
 
-func InitRedis(cfg *config.AppConfig) (*redis.RedisClient, error) {
+// InitRedis initializes a Redis client.
+func InitRedis(cfg *config.AppConfig) (*redis.Client, error) {
 	addr := fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port)
-	return redis.NewRedisClient(addr, cfg.Redis.Password, 0)
+
+	return redis.NewClient(addr, cfg.Redis.Password, 0)
 }

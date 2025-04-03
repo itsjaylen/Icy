@@ -3,31 +3,30 @@ package appinit
 import (
 	"fmt"
 
-	clickhouse "IcyAPI/internal/api/repositories/ClickHouse"
-	minobucket "IcyAPI/internal/api/repositories/MinoBucket"
-	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"
-	rabbitmq "IcyAPI/internal/api/repositories/RabbitMQ"
-	redis "IcyAPI/internal/api/repositories/Redis"
-	"IcyAPI/internal/api/services/webhooks"
-	"IcyAPI/internal/events"
-	"IcyAPI/internal/models"
-
+	clickhouse "github.com/itsjaylen/IcyAPI/internal/api/repositories/ClickHouse"
+	minobucket "github.com/itsjaylen/IcyAPI/internal/api/repositories/MinoBucket"
+	postgresql "github.com/itsjaylen/IcyAPI/internal/api/repositories/PostgreSQL"
+	rabbitmq "github.com/itsjaylen/IcyAPI/internal/api/repositories/RabbitMQ"
+	redis "github.com/itsjaylen/IcyAPI/internal/api/repositories/Redis"
+	"github.com/itsjaylen/IcyAPI/internal/api/services/webhooks"
+	"github.com/itsjaylen/IcyAPI/internal/events"
+	"github.com/itsjaylen/IcyAPI/internal/models"
 	config "itsjaylen/IcyConfig"
 	logger "itsjaylen/IcyLogger"
 )
 
-// App structure to hold dependencies
+// App structure to hold dependencies.
 type App struct {
 	Cfg              *config.AppConfig
 	EventServer      *events.EventServer
-	RedisClient      *redis.RedisClient
-	ClickHouseClient *clickhouse.ClickHouseClient
+	Client           *redis.Client
+	ClickHouseClient *clickhouse.Client
 	PostgresClient   *postgresql.PostgresClient
 	MinioClient      *minobucket.MinioClient
-	RabbitMQ         *rabbitmq.RabbitMQClient
+	RabbitMQ         *rabbitmq.Client
 }
 
-// NewApp initializes the application
+// NewApp initializes the application.
 func NewApp(debug bool) (*App, error) {
 	logger.Debug.Printf("Debug mode: %v", debug)
 	cfg, err := config.LoadConfig(map[bool]string{true: "debug", false: "release"}[debug])
@@ -41,7 +40,7 @@ func NewApp(debug bool) (*App, error) {
 		}
 	}
 
-	redisClient, err := InitRedis(cfg)
+	Client, err := InitRedis(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func NewApp(debug bool) (*App, error) {
 	return &App{
 		Cfg:              cfg,
 		EventServer:      events.NewEventServer(cfg.Server.Host, cfg.EventServer.Port),
-		RedisClient:      redisClient,
+		Client:           Client,
 		ClickHouseClient: clickhouseClient,
 		PostgresClient:   postgresClient,
 		MinioClient:      minioClient,
@@ -77,7 +76,7 @@ func NewApp(debug bool) (*App, error) {
 	}, nil
 }
 
-// RunMigrations handles database migrations
+// RunMigrations handles database migrations.
 func (a *App) RunMigrations() error {
 	return a.PostgresClient.Migrate(&models.User{})
 }

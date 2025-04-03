@@ -1,18 +1,19 @@
+// Package admin provides routes for administrative tasks.
 package admin
 
 import (
-	"IcyAPI/internal/api/controllers/admin"
-	"IcyAPI/internal/api/middleware"
-	postgresql "IcyAPI/internal/api/repositories/PostgreSQL"
-	redis "IcyAPI/internal/api/repositories/Redis"
 	"net/http"
 	"time"
+
+	"github.com/itsjaylen/IcyAPI/internal/api/controllers/admin"
+	"github.com/itsjaylen/IcyAPI/internal/api/middleware"
+	postgresql "github.com/itsjaylen/IcyAPI/internal/api/repositories/PostgreSQL"
+	redis "github.com/itsjaylen/IcyAPI/internal/api/repositories/Redis"
 )
 
-// RegisterRoutes registers admin-related routes
-func RegisterRoutes(mux *http.ServeMux, redisClient *redis.RedisClient, postgresClient *postgresql.PostgresClient) {
-	AdminController := admin.NewAdminController(redisClient, postgresClient)
-
+// RegisterRoutes registers admin-related routes. TODO: ADD AUTH!!!!!!
+func RegisterRoutes(mux *http.ServeMux, client *redis.Client, postgresClient *postgresql.PostgresClient) {
+	AdminController := admin.NewAdminController(client, postgresClient)
 
 	mux.Handle(
 		"/admin/users",

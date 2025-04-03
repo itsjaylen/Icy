@@ -1,65 +1,72 @@
+// Package middleware provides middleware functions for analytics.
 package middleware
 
 import (
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	// Define a Prometheus counter for request count
-	httpRequests = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "Total number of HTTP requests",
-		},
-		[]string{"method", "status_code", "path"},
-	)
-
-	// Define a Prometheus histogram for request duration
-	httpDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_duration_seconds",
-			Help:    "Histogram of HTTP request durations",
-			Buckets: prometheus.DefBuckets,
-		},
-		[]string{"method", "status_code", "path"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(httpRequests)
-	prometheus.MustRegister(httpDuration)
+// Metrics holds Prometheus metric collectors.
+type Metrics struct {
+	httpRequests *prometheus.CounterVec
+	httpDuration *prometheus.HistogramVec
+	once         sync.Once
 }
 
-// AnalyticsMiddleware captures request metrics for Prometheus
-func AnalyticsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// NewMetrics initializes and registers Prometheus metrics.
+func NewMetrics() *Metrics {
+	metrics := &Metrics{}
+	metrics.once.Do(func() {
+		metrics.httpRequests = prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Name: "http_requests_total",
+				Help: "Total number of HTTP requests",
+			},
+			[]string{"method", "status_code", "path"},
+		)
+
+		metrics.httpDuration = prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name:    "http_duration_seconds",
+				Help:    "Histogram of HTTP request durations",
+				Buckets: prometheus.DefBuckets,
+			},
+			[]string{"method", "status_code", "path"},
+		)
+
+		prometheus.MustRegister(metrics.httpRequests)
+		prometheus.MustRegister(metrics.httpDuration)
+	})
+
+	return metrics
+}
+
+// AnalyticsMiddleware captures request metrics for Prometheus.
+func (m *Metrics) AnalyticsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		start := time.Now()
-
-		// Create a response writer wrapper to capture status code
 		ww := &responseWriterWrapper{ResponseWriter: w, statusCode: http.StatusOK}
-		next.ServeHTTP(ww, r)
+		next.ServeHTTP(ww, req)
 
-		// Calculate duration
 		duration := time.Since(start).Seconds()
 		statusCode := strconv.Itoa(ww.statusCode)
 
-		// Record the metrics
-		httpRequests.WithLabelValues(r.Method, statusCode, r.URL.Path).Inc()
-		httpDuration.WithLabelValues(r.Method, statusCode, r.URL.Path).Observe(duration)
+		m.httpRequests.WithLabelValues(req.Method, statusCode, req.URL.Path).Inc()
+		m.httpDuration.WithLabelValues(req.Method, statusCode, req.URL.Path).Observe(duration)
 	})
 }
 
-// MetricsHandler exposes the Prometheus metrics
-func MetricsHandler() http.Handler {
+// MetricsHandler exposes the Prometheus metrics.
+func (m *Metrics) MetricsHandler() http.Handler {
 	return promhttp.Handler()
 }
 
-// responseWriterWrapper is used to capture HTTP response status codes
+// responseWriterWrapper captures HTTP response status codes.
 type responseWriterWrapper struct {
 	http.ResponseWriter
 	statusCode int

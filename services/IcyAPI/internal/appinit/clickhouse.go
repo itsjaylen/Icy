@@ -1,13 +1,17 @@
+// Package appinit provides functions to initialize ClickHouse dependencies.
 package appinit
 
 import (
-	clickhouse "IcyAPI/internal/api/repositories/ClickHouse"
 	"fmt"
+
+	clickhouse "github.com/itsjaylen/IcyAPI/internal/api/repositories/ClickHouse"
 	config "itsjaylen/IcyConfig"
 )
 
-func InitClickHouse(cfg *config.AppConfig) (*clickhouse.ClickHouseClient, error) {
+// InitClickHouse initializes a ClickHouse client.
+func InitClickHouse(cfg *config.AppConfig) (*clickhouse.Client, error) {
 	addr := fmt.Sprintf("clickhouse://%s:%s?username=%s&password=%s",
 		cfg.Clickhouse.Host, cfg.Clickhouse.Port, cfg.Clickhouse.User, cfg.Clickhouse.Password)
+
 	return clickhouse.NewClickHouseClient(addr)
 }

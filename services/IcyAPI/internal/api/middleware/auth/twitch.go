@@ -1,40 +1,46 @@
 package auth
 
 import (
-	"IcyAPI/internal/models"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/itsjaylen/IcyAPI/internal/models"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
-// TwitchLoginHandler redirects the user to Twitch's OAuth consent page
-func TwitchLoginHandler(w http.ResponseWriter, r *http.Request) {
+// TwitchLoginHandler redirects the user to Twitch's OAuth consent page.
+func TwitchLoginHandler(writer http.ResponseWriter, request *http.Request) {
 	url := oauth2TwitchConfig.AuthCodeURL(oauth2StateString, oauth2.AccessTypeOffline)
-	http.Redirect(w, r, url, http.StatusFound)
+	http.Redirect(writer, request, url, http.StatusFound)
 }
 
-func (auth *AuthService) TwitchCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
+func (auth *Service) TwitchCallbackHandler(writer http.ResponseWriter, request *http.Request) {
+	code := request.URL.Query().Get("code")
 	if code == "" {
-		http.Error(w, "Code not found", http.StatusBadRequest)
+		http.Error(writer, "Code not found", http.StatusBadRequest)
+
 		return
 	}
 
 	// Exchange the authorization code for an access token
-	token, err := oauth2TwitchConfig.Exchange(r.Context(), code)
+	token, err := oauth2TwitchConfig.Exchange(request.Context(), code)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to exchange token: %v", err), http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("Failed to exchange token: %v", err), http.StatusInternalServerError)
+
 		return
 	}
 
-	// Fetch user information from Twitch
-	req, err := http.NewRequest("GET", "https://api.twitch.tv/helix/users", nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.twitch.tv/helix/users", nil)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create request: %v", err), http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("Failed to create request: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -44,7 +50,8 @@ func (auth *AuthService) TwitchCallbackHandler(w http.ResponseWriter, r *http.Re
 	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get user info: %v", err), http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("Failed to get user info: %v", err), http.StatusInternalServerError)
+
 		return
 	}
 	defer resp.Body.Close()
@@ -53,18 +60,20 @@ func (auth *AuthService) TwitchCallbackHandler(w http.ResponseWriter, r *http.Re
 		Data []struct {
 			ID          string `json:"id"`
 			Login       string `json:"login"`
-			DisplayName string `json:"display_name"`
+			DisplayName string `json:"displayName"`
 			Email       string `json:"email"`
 		} `json:"data"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&twitchResponse); err != nil {
-		http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
+		http.Error(writer, "Failed to decode user info", http.StatusInternalServerError)
+
 		return
 	}
 
 	if len(twitchResponse.Data) == 0 {
-		http.Error(w, "No user data found", http.StatusInternalServerError)
+		http.Error(writer, "No user data found", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -82,11 +91,13 @@ func (auth *AuthService) TwitchCallbackHandler(w http.ResponseWriter, r *http.Re
 				APIKey:   auth.GenerateAPIKey(),
 			}
 			if err := auth.PostgresClient.DB.Create(&user).Error; err != nil {
-				http.Error(w, "Failed to create user", http.StatusInternalServerError)
+				http.Error(writer, "Failed to create user", http.StatusInternalServerError)
+
 				return
 			}
 		} else {
-			http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+			http.Error(writer, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+
 			return
 		}
 	}
@@ -95,8 +106,8 @@ func (auth *AuthService) TwitchCallbackHandler(w http.ResponseWriter, r *http.Re
 	accessToken, refreshToken, _ := auth.GenerateTokens(user.Username, user.Role)
 
 	// Send the tokens back to the user
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(map[string]string{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"api_key":       user.APIKey,

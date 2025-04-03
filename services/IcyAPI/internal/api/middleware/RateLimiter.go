@@ -6,16 +6,21 @@ import (
 	"time"
 )
 
-var rateLimitStore     sync.Map
-
-// rateLimiter tracks requests per client
-type rateLimiter struct {
-	sync.Mutex
-	visits map[string]int
-	reset  time.Time
+// RateLimiterStore manages request rate limits per client.
+type RateLimiterStore struct {
+	store sync.Map
 }
 
-// RateLimiter middleware limits requests within a given duration
+var globalRateLimiter = &RateLimiterStore{}
+
+// rateLimiter keeps track of request counts and reset time.
+type rateLimiter struct {
+	visits map[string]int
+	reset  time.Time
+	sync.Mutex
+}
+
+// RateLimiter limits requests within a given duration.
 func RateLimiter(next http.Handler, limit int, duration time.Duration) http.Handler {
 	rl := &rateLimiter{
 		visits: make(map[string]int),
@@ -39,7 +44,6 @@ func RateLimiter(next http.Handler, limit int, duration time.Duration) http.Hand
 		ip := r.RemoteAddr
 		if rl.visits[ip] >= limit {
 			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
-			return
 		}
 
 		rl.visits[ip]++
@@ -47,14 +51,16 @@ func RateLimiter(next http.Handler, limit int, duration time.Duration) http.Hand
 	})
 }
 
+// RateLimitMiddleware applies a request rate limit based on time duration.
 func RateLimitMiddleware(next http.HandlerFunc, limit time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		clientIP := r.RemoteAddr
-		if lastRequest, exists := rateLimitStore.Load(clientIP); exists && time.Since(lastRequest.(time.Time)) < limit {
-			http.Error(w, "Too many requests", http.StatusTooManyRequests)
-			return
+		if lastRequest, exists := globalRateLimiter.store.Load(clientIP); exists {
+			if lastReqTime, ok := lastRequest.(time.Time); ok && time.Since(lastReqTime) < limit {
+				http.Error(w, "Too many requests", http.StatusTooManyRequests)
+			}
 		}
-		rateLimitStore.Store(clientIP, time.Now())
+		globalRateLimiter.store.Store(clientIP, time.Now())
 		next(w, r)
 	}
 }

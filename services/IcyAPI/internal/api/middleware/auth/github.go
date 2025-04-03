@@ -1,53 +1,57 @@
 package auth
 
 import (
-	"IcyAPI/internal/models"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/itsjaylen/IcyAPI/internal/models"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
-// GitHub OAuth Handlers
-func GithubLoginHandler(w http.ResponseWriter, r *http.Request) {
+// GitHub OAuth Handlers.
+func GithubLoginHandler(writer http.ResponseWriter, request *http.Request) {
 	url := oauth2GithubConfig.AuthCodeURL(oauth2StateString, oauth2.AccessTypeOffline)
-	http.Redirect(w, r, url, http.StatusFound)
+	http.Redirect(writer, request, url, http.StatusFound)
 }
 
-func (auth *AuthService) GithubCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
+func (auth *Service) GithubCallbackHandler(writer http.ResponseWriter, request *http.Request) {
+	code := request.URL.Query().Get("code")
 	if code == "" {
-		http.Error(w, "Code not found", http.StatusBadRequest)
+		http.Error(writer, "Code not found", http.StatusBadRequest)
+
 		return
 	}
 
-	token, err := oauth2GithubConfig.Exchange(r.Context(), code)
+	token, err := oauth2GithubConfig.Exchange(request.Context(), code)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to exchange token: %v", err), http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("Failed to exchange token: %v", err), http.StatusInternalServerError)
+
 		return
 	}
 
-	client := oauth2GithubConfig.Client(r.Context(), token)
+	client := oauth2GithubConfig.Client(request.Context(), token)
 
 	// Fetch user info from GitHub
 	userResp, err := client.Get("https://api.github.com/user")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get user info: %v", err), http.StatusInternalServerError)
+		http.Error(writer, fmt.Sprintf("Failed to get user info: %v", err), http.StatusInternalServerError)
+
 		return
 	}
 	defer userResp.Body.Close()
 
 	var userInfo struct {
-		ID    int    `json:"id"`
 		Email string `json:"email"`
 		Name  string `json:"name"`
+		ID    int    `json:"id"`
 	}
 
 	if err := json.NewDecoder(userResp.Body).Decode(&userInfo); err != nil {
-		http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
+		http.Error(writer, "Failed to decode user info", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -55,7 +59,8 @@ func (auth *AuthService) GithubCallbackHandler(w http.ResponseWriter, r *http.Re
 	if userInfo.Email == "" {
 		emailResp, err := client.Get("https://api.github.com/user/emails")
 		if err != nil {
-			http.Error(w, "Failed to fetch emails", http.StatusInternalServerError)
+			http.Error(writer, "Failed to fetch emails", http.StatusInternalServerError)
+
 			return
 		}
 		defer emailResp.Body.Close()
@@ -67,7 +72,8 @@ func (auth *AuthService) GithubCallbackHandler(w http.ResponseWriter, r *http.Re
 		}
 
 		if err := json.NewDecoder(emailResp.Body).Decode(&emails); err != nil {
-			http.Error(w, "Failed to decode email response", http.StatusInternalServerError)
+			http.Error(writer, "Failed to decode email response", http.StatusInternalServerError)
+
 			return
 		}
 
@@ -75,13 +81,15 @@ func (auth *AuthService) GithubCallbackHandler(w http.ResponseWriter, r *http.Re
 		for _, e := range emails {
 			if e.Primary && e.Verified {
 				userInfo.Email = e.Email
+
 				break
 			}
 		}
 
 		// If still no email, return an error
 		if userInfo.Email == "" {
-			http.Error(w, "No verified email found for this GitHub account", http.StatusBadRequest)
+			http.Error(writer, "No verified email found for this GitHub account", http.StatusBadRequest)
+
 			return
 		}
 	}
@@ -98,12 +106,13 @@ func (auth *AuthService) GithubCallbackHandler(w http.ResponseWriter, r *http.Re
 				APIKey:   auth.GenerateAPIKey(),
 			}
 			if err := auth.PostgresClient.DB.Create(&user).Error; err != nil {
-				http.Error(w, "Failed to create user", http.StatusInternalServerError)
+				http.Error(writer, "Failed to create user", http.StatusInternalServerError)
+
 				return
 			}
 		} else {
-			// Other DB errors
-			http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+			http.Error(writer, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
+
 			return
 		}
 	}
@@ -112,8 +121,8 @@ func (auth *AuthService) GithubCallbackHandler(w http.ResponseWriter, r *http.Re
 	accessToken, refreshToken, _ := auth.GenerateTokens(user.Username, user.Role)
 
 	// Send the tokens back to the user
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(map[string]string{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"api_key":       user.APIKey,

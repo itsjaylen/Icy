@@ -1,12 +1,12 @@
 package workers
 
 import (
-	"IcyAPI/internal/appinit"
 	"fmt"
-	logger "itsjaylen/IcyLogger"
 	"time"
 
 	"github.com/hibiken/asynq"
+	"github.com/itsjaylen/IcyAPI/internal/appinit"
+	logger "itsjaylen/IcyLogger"
 )
 
 const (
@@ -16,11 +16,13 @@ const (
 	rabbitMQHealthCheckTask   = "rabbitmq_health_check"
 )
 
+// TaskManagerController is the controller for the task manager.
 type TaskManagerController struct {
 	App    *appinit.App
 	Worker *Worker
 }
 
+// creates a new task manager controller.
 func NewTaskManagerController(app *appinit.App) *TaskManagerController {
 	return &TaskManagerController{
 		App:    app,
@@ -28,7 +30,7 @@ func NewTaskManagerController(app *appinit.App) *TaskManagerController {
 	}
 }
 
-// sets up the task manager for background tasks
+// sets up the task manager for background tasks.
 func SetupTaskManager(app *appinit.App) {
 	logger.Info.Println("Setting up task manager...")
 	mux := asynq.NewServeMux()

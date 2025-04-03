@@ -6,7 +6,7 @@ type URLStore interface {
 }
 
 type URLMapping struct {
-	ID          uint   `gorm:"primaryKey"`
 	OriginalURL string `gorm:"unique;not null"`
 	ShortURL    string `gorm:"unique;not null"`
+	ID          uint   `gorm:"primaryKey"`
 }
