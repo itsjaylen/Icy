@@ -42,7 +42,6 @@ linters:
     - nlreturn
     - noctx
     - predeclared
-    - revive
     - staticcheck
     - tagliatelle
     - thelper
@@ -69,6 +68,7 @@ linters:
     - tparallel
     - wrapcheck
     - wsl
+    - revive
   settings:
     exhaustive:
       default-signifies-exhaustive: true
