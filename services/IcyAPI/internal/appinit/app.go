@@ -3,16 +3,18 @@ package appinit
 import (
 	"fmt"
 
+	config "itsjaylen/IcyConfig"
+	logger "itsjaylen/IcyLogger"
+
 	clickhouse "github.com/itsjaylen/IcyAPI/internal/api/repositories/ClickHouse"
 	minobucket "github.com/itsjaylen/IcyAPI/internal/api/repositories/MinoBucket"
 	postgresql "github.com/itsjaylen/IcyAPI/internal/api/repositories/PostgreSQL"
 	rabbitmq "github.com/itsjaylen/IcyAPI/internal/api/repositories/RabbitMQ"
 	redis "github.com/itsjaylen/IcyAPI/internal/api/repositories/Redis"
+	"github.com/itsjaylen/IcyAPI/internal/api/services/urlshortern"
 	"github.com/itsjaylen/IcyAPI/internal/api/services/webhooks"
 	"github.com/itsjaylen/IcyAPI/internal/events"
 	"github.com/itsjaylen/IcyAPI/internal/models"
-	config "itsjaylen/IcyConfig"
-	logger "itsjaylen/IcyLogger"
 )
 
 // App structure to hold dependencies.
@@ -78,5 +80,5 @@ func NewApp(debug bool) (*App, error) {
 
 // RunMigrations handles database migrations.
 func (a *App) RunMigrations() error {
-	return a.PostgresClient.Migrate(&models.User{})
+	return a.PostgresClient.Migrate(&models.User{}, urlshortern.URLMapping{})
 }

@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"time"
 
+	logger "itsjaylen/IcyLogger"
+
 	"github.com/itsjaylen/IcyAPI/internal/api/middleware"
 	"github.com/itsjaylen/IcyAPI/internal/api/routes"
 	"github.com/itsjaylen/IcyAPI/internal/appinit"
 	"github.com/itsjaylen/IcyAPI/internal/workers/tasks/health"
-	logger "itsjaylen/IcyLogger"
+	"github.com/rs/cors"
 )
 
 // Server struct to hold server configurations.
@@ -26,7 +28,6 @@ type Server struct {
 func NewAPIServer(app *appinit.App) *Server {
 	mux := http.NewServeMux()
 
-	// Register healthz endpoint
 	mux.HandleFunc("/healthz", health.HealthzHandler)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -45,16 +46,23 @@ func NewAPIServer(app *appinit.App) *Server {
 	handler = middleware.RecoveryMiddleware(handler)
 	handler = middleware.ErrorHandler(handler)
 
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // or restrict to specific services consuming your API
+		AllowedMethods:   []string{"GET", "POST"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: false,
+	}).Handler(handler)
+
 	srv := &http.Server{
 		Addr:              fmt.Sprintf("%s:%s", app.Cfg.Server.Host, app.Cfg.Server.Port),
-		Handler:           handler,
+		Handler:           corsHandler,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	return &Server{
 		Host:    app.Cfg.Server.Host,
 		Port:    app.Cfg.Server.Port,
-		Handler: handler,
+		Handler: corsHandler,
 		server:  srv,
 	}
 }
