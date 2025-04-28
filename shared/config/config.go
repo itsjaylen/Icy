@@ -80,4 +80,6 @@ type MinioBucketConfig struct {
 	Port      string `json:"port"`
 	AccessKey string `json:"AccessKey"`
 	SecretKey string `json:"SecretKey"`
+	BucketName string `json:"BucketName"`
+	MaxFileSize int64  `json:"MaxFileSize"`
 }

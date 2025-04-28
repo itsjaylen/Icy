@@ -59,5 +59,7 @@ var DefaultConfig = AppConfig{
 		Port:      "9000",
 		AccessKey: "admin",
 		SecretKey: "supersecretpassword",
+		BucketName: "S3BucketPub",
+		MaxFileSize: 10 * 1024 * 1024,
 	},
 }

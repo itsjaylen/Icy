@@ -8,9 +8,19 @@ import (
 	config "itsjaylen/IcyConfig"
 )
 
-// InitMinio initializes a Minio client.
+// InitMinio initializes a Minio client and ensures the required bucket exists.
 func InitMinio(cfg *config.AppConfig) (*minobucket.MinioClient, error) {
 	addr := fmt.Sprintf("%s:%s", cfg.Minio.Host, cfg.Minio.Port)
 
-	return minobucket.NewMinioClient(addr, cfg.Minio.AccessKey, cfg.Minio.SecretKey, false)
+	client, err := minobucket.NewMinioClient(addr, cfg.Minio.AccessKey, cfg.Minio.SecretKey, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Minio: %w", err)
+	}
+
+	err = client.CreateBucketIfNotExists("pastebin")
+	if err != nil {
+		return nil, fmt.Errorf("failed to ensure bucket exists: %w", err)
+	}
+
+	return client, nil
 }

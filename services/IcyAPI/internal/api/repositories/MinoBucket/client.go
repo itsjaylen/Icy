@@ -3,12 +3,15 @@ package minobucket
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
+
+	logger "itsjaylen/IcyLogger"
 
 	"github.com/itsjaylen/IcyAPI/internal/utils"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	logger "itsjaylen/IcyLogger"
 )
 
 // MinioClient represents a Minio client.
@@ -68,4 +71,44 @@ func (minobucket *MinioClient) Reconnect() {
 	} else {
 		logger.Info.Println("Reconnected to Minio successfully")
 	}
+}
+
+// CreateBucketIfNotExists checks if a bucket exists, creates it if not, and sets it to public.
+func (minobucket *MinioClient) CreateBucketIfNotExists(bucketName string) error {
+	bucketName = strings.ToLower(bucketName)
+	ctx := context.Background()
+
+	exists, err := minobucket.Client.BucketExists(ctx, bucketName)
+	if err != nil {
+		return fmt.Errorf("checking if bucket exists: %w", err)
+	}
+
+	if !exists {
+		if err := minobucket.Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{}); err != nil {
+			return fmt.Errorf("creating bucket: %w", err)
+		}
+		logger.Info.Println("Created bucket:", bucketName)
+	} else {
+		logger.Info.Println("Bucket already exists:", bucketName)
+	}
+
+	// Set public read policy for the bucket
+	policy := fmt.Sprintf(`{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+				"Effect": "Allow",
+				"Principal": {"AWS": ["*"]},
+				"Action": ["s3:GetObject"],
+				"Resource": ["arn:aws:s3:::%s/*"]
+			}
+		]
+	}`, bucketName)
+
+	if err := minobucket.Client.SetBucketPolicy(ctx, bucketName, policy); err != nil {
+		return fmt.Errorf("setting bucket policy: %w", err)
+	}
+	logger.Info.Println("Set bucket policy to public for:", bucketName)
+
+	return nil
 }
