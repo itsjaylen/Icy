@@ -1,6 +1,6 @@
 module github.com/itsjaylen/IcyAPI
 
-go 1.24.0
+go 1.24.2
 
 replace itsjaylen/IcyLogger v0.0.0 => ../../shared/logger
 
