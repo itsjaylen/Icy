@@ -14,8 +14,8 @@ import (
 func RegisterRoutes(mux *http.ServeMux, app *appinit.App) {
 	authhandler := auth.NewAuthService(app.Client, app.PostgresClient, app.Cfg)
 
-	mux.HandleFunc("/signup", middleware.RateLimitMiddleware(authhandler.SignupHandler, 1*time.Second))
-	mux.HandleFunc("/login", middleware.RateLimitMiddleware(authhandler.LoginHandler, 1*time.Second))
+	mux.HandleFunc("/signup", middleware.RateLimitMiddleware(authhandler.SignupHandler, 5*time.Second, 3))
+	mux.HandleFunc("/login", middleware.RateLimitMiddleware(authhandler.LoginHandler, 5*time.Second, 3))
 	mux.HandleFunc("/refresh", authhandler.RefreshTokenHandler)
 	mux.HandleFunc("/admin", middleware.RoleMiddleware(app, auth.AdminHandler, "admin"))
 	mux.HandleFunc("/user", middleware.RoleMiddleware(app, auth.UserHandler, "user", "admin"))

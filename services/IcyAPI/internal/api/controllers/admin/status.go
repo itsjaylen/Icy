@@ -26,9 +26,8 @@ func NewAdminController(Client *redis.Client, postgresClient *postgresql.Postgre
 
 // HandleUserRequest example handler using dependencies.
 func (c *Controller) HandleUserRequest(writer http.ResponseWriter, request *http.Request) {
-	ctx := request.Context() // Use request context
+	ctx := request.Context()
 
-	// Use Redis Set with required arguments
 	err := c.Client.Set(ctx, "my_key", "my_value", 0)
 	if err != nil {
 		http.Error(writer, "Failed to set key in Redis", http.StatusInternalServerError)

@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@layer base {
+	body {
+		@apply flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600;
+	}
+}
